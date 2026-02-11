@@ -17,3 +17,11 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	//Agent.GetWorld();
 	return Steering;
 }
+
+SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	SteeringOutput Steering{};
+	Steering.LinearVelocity = Target.Position - Agent.GetPosition();
+	Steering.LinearVelocity *= -1;
+	return Steering;
+}
