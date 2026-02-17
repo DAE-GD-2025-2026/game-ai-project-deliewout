@@ -44,4 +44,18 @@ public:
 
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 };
+
+//ARRIVE
+class Arrive : public ISteeringBehavior
+{
+public:
+	Arrive() = default;
+	virtual ~Arrive() = default;
+
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+private:
+	float SlowRadius{600.f};
+	float TargetRadius{100.f};
+
+};
 // Your own SteeringBehaviors should follow here...
