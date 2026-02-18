@@ -26,10 +26,10 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	const float MaxLineairSpeed{ Agent.GetMaxLinearSpeed() };
 	Steering.LinearVelocity =  Agent.GetPosition()- Target.Position ;
 	//TODO: solve the problem in the distance calculation
-	const float distance = Steering.LinearVelocity.Normalize() - TargetRadius;
-	if (distance < SlowRadius)
+	const float Distance = Steering.LinearVelocity.Normalize() - TargetRadius;
+	if (Distance < SlowRadius)
 	{
-		Steering.LinearVelocity *= Agent.GetMaxLinearSpeed() * (distance / (SlowRadius + TargetRadius));
+		Steering.LinearVelocity *= Agent.GetMaxLinearSpeed() * (Distance / (SlowRadius + TargetRadius));
 	}
 	else
 	{
@@ -67,15 +67,30 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	float Distance = (Target.Position - Agent.GetPosition()).Length();
 	float TargetTime = Distance / Agent.GetMaxLinearSpeed();
 	FVector2D PredictedPos = Target.Position + Target.LinearVelocity * TargetTime;
-	FVector2D direction = PredictedPos - Agent.GetPosition();
-	direction.Normalize();
-	Steering.LinearVelocity = direction * Agent.GetMaxLinearSpeed();
+	FVector2D Direction = PredictedPos - Agent.GetPosition();
+	Direction.Normalize();
+	Steering.LinearVelocity = Direction * Agent.GetMaxLinearSpeed();
 	return Steering;
 }
 
 SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-	return SteeringOutput();
+	SteeringOutput Steering{};
+	float Distance = (Target.Position - Agent.GetPosition()).Length();
+	if (Distance < EvadeRadius)
+	{
+		float TargetTime = Distance / Agent.GetMaxLinearSpeed();
+		FVector2D PredictedPos = Target.Position + Target.LinearVelocity * TargetTime;
+		FVector2D Direction = PredictedPos - Agent.GetPosition();
+		Direction.Normalize();
+		Steering.LinearVelocity -= Direction * Agent.GetMaxLinearSpeed();
+	}
+
+	if (Agent.GetDebugRenderingEnabled())
+	{
+		DrawDebugCircle(Agent.GetWorld(), Agent.GetActorLocation(), EvadeRadius, 8, FColor::Red, false, -1.f, 0, 0.0f, FVector(1.0f, 0.0f, 0.0f), FVector(0.0f, 1.0f, 0.0f));
+	}
+	return Steering;
 }
 
 SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
