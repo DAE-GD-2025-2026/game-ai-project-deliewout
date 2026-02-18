@@ -69,4 +69,35 @@ public:
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 
 };
+
+//PURSUIT
+class Pursuit : public ISteeringBehavior
+{
+public:
+	Pursuit() = default;
+	virtual ~Pursuit() = default;
+
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+
+};
+//Evade
+class Evade : public ISteeringBehavior
+{
+public:
+	Evade() = default;
+	virtual ~Evade() = default;
+
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+
+};
+class Wander : public ISteeringBehavior
+{
+public:
+	Wander() = default;
+	virtual ~Wander() = default;
+
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+
+};
+
 // Your own SteeringBehaviors should follow here...
