@@ -32,7 +32,11 @@ void ASteeringAgent::Tick(float DeltaTime)
 		AddMovementInput(FVector{output.LinearVelocity, 0.f});
 
 		//TODO: Implement angular velocity
-		AddControllerYawInput(output.AngularVelocity * DeltaTime);
+		if (this->IsAutoOrienting() == false)
+		{
+		AddActorLocalRotation(FRotator{ 0,output.AngularVelocity*DeltaTime,0 });
+
+		}
 		
 	}
 }

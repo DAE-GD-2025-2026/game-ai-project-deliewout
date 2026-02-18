@@ -58,4 +58,15 @@ private:
 	float TargetRadius{100.f};
 
 };
+
+//FACE
+class Face : public ISteeringBehavior
+{
+public:
+	Face() = default;
+	virtual ~Face() = default;
+
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+
+};
 // Your own SteeringBehaviors should follow here...
