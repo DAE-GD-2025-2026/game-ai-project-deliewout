@@ -92,13 +92,23 @@ private:
 	float EvadeRadius{300.f};
 
 };
-class Wander : public ISteeringBehavior
+class Wander : public Seek
 {
 public:
 	Wander() = default;
 	virtual ~Wander() = default;
 
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+
+	void SetWanderOffset(float offset){}
+	void SetWanderRadius(float radius){}
+	void SetMaxAngleChange(float rad) {}
+private:
+	float OffsetDistance = 50.f;
+	float Radius = 150.f;
+	float MaxAngleChange = FMath::DegreesToRadians(45.f);
+	float WanderAngle;
+
 
 };
 
