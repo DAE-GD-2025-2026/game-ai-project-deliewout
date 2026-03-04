@@ -29,8 +29,8 @@ Flock::Flock(
 	pSeparationBehavior = std::make_unique<Separation>(this);
 	pCohesionBehavior = std::make_unique<Cohesion>(this);
 	pVelMatchBehavior = std::make_unique<VelocityMatch>(this);
-	pSeekBehavior = std::make_unique<Seek>(this);
-	pWanderBehavior = std::make_unique<Wander>(this);
+	//pSeekBehavior = std::make_unique<Seek>(this);
+	//pWanderBehavior = std::make_unique<Wander>(this);
 }
 
 Flock::~Flock()

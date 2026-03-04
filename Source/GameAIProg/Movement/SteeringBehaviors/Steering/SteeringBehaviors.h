@@ -53,6 +53,7 @@ public:
 	virtual ~Arrive() = default;
 
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+	void SetTargetRadius(float targetRadius) { TargetRadius = targetRadius; }
 private:
 	float SlowRadius{600.f};
 	float TargetRadius{100.f};
