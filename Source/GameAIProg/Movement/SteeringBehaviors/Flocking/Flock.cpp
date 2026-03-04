@@ -25,20 +25,35 @@ Flock::Flock(
 		//if (Agents[i] == nullptr)
 		//	--i;
 	}
+
+	pSeparationBehavior = std::make_unique<Separation>(this);
+	pCohesionBehavior = std::make_unique<Cohesion>(this);
+	pVelMatchBehavior = std::make_unique<VelocityMatch>(this);
+	pSeekBehavior = std::make_unique<Seek>(this);
+	pWanderBehavior = std::make_unique<Wander>(this);
 }
 
 Flock::~Flock()
 {
  // TODO: Cleanup any additional data
+	Neighbors.Empty();
+	Agents.Empty();
 }
 
 void Flock::Tick(float DeltaTime)
 {
  // TODO: update the flock
- // TODO: for every agent:
-  // TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent)
-  // TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
+ // TODO: for every agent: done
+  // TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent) done
+  // TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool) done
   // TODO: trim the agent to the world
+	for (ASteeringAgent* Agent : Agents)
+	{
+		RegisterNeighbors(Agent);
+		Agent->Tick(DeltaTime);
+		FVector2D pos = Agent->GetPosition();
+
+	}
 }
 
 void Flock::RenderDebug()
@@ -90,6 +105,8 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 		ImGui::Spacing();
 
   // TODO: implement ImGUI sliders for steering behavior weights here
+		//float 
+		//ImGui::SliderFloat("Cohesion",)
 		//End
 		ImGui::End();
 	}
@@ -113,7 +130,7 @@ void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 	{
 		if (Neighbor == pAgent)
 			continue;
-		float distance = Neighbor->GetPosition().Length() - pAgent->GetPosition().Length();
+		const float distance = Neighbor->GetPosition().Length() - pAgent->GetPosition().Length();
 		if (distance < NeighborhoodRadius)
 		{
 			Neighbors[NrOfNeighbors] = Neighbor;

@@ -27,16 +27,18 @@ SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& pAgen
 	for (const ASteeringAgent* Agent : pFlock->GetNeighbors())
 	{
 		if (!Agent)continue;
-		FVector2D TargetPos = pAgent.GetPosition() - Agent->GetPosition();
-		float Magnitude = TargetPos.Length();
+		const FVector2D ToAgent = pAgent.GetPosition() - Agent->GetPosition();
+		//FVector2D pushForce = ToAgent;
+		//pushForce /= pushForce.SquaredLength();
+		//Outputvelocity+=pushForce
+		float Magnitude = ToAgent.Length();
 		if (Magnitude>0)
 		{
-			SeperationForce = (TargetPos * Magnitude) / (1 / Magnitude);
+			SeperationForce = (ToAgent * Magnitude) / (1 / Magnitude);
 		}
 	}
 	Steering.LinearVelocity = SeperationForce;
 	Steering.LinearVelocity.Normalize();
-	Steering.LinearVelocity *= pAgent.GetMaxLinearSpeed();
 	return Steering;
 }
 //*************************
