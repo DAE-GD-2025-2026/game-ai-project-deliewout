@@ -22,6 +22,7 @@ Flock::Flock(
 	pSeekBehavior = std::make_unique<Seek>();
 	pWanderBehavior = std::make_unique<Wander>();
 
+
 	pBlendedSteering = std::make_unique<BlendedSteering>(
 		std::vector<BlendedSteering::WeightedBehavior>{
 			{pSeparationBehavior.get(), 0.2f},
@@ -31,7 +32,21 @@ Flock::Flock(
 			{ pWanderBehavior.get(),0.8f }
 
 	}
+	);
+
+	pCurrentSteeringBehaviour = pBlendedSteering.get();
+	if (pAgentToEvade)
+	{
+		pEvadeBehavior = std::make_unique<Evade>();
+		pEvadeBehavior->SetTarget(FSteeringParams{ pAgentToEvade->GetPosition() });
+		pPrioritySteering = std::make_unique<PrioritySteering>(std::vector<ISteeringBehavior*>
+		{
+			pEvadeBehavior.get(),
+			pBlendedSteering.get()
+		}
 		);
+		pCurrentSteeringBehaviour = pPrioritySteering.get();
+	}
 
 	//initialize the flock and the memory pool
 	for (int i = 0; i < FlockSize; ++i)
@@ -66,6 +81,10 @@ void Flock::Tick(float DeltaTime)
   // TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent) done
   // TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool) done
   // TODO: trim the agent to the world
+	if (pAgentToEvade)
+	{
+		pEvadeBehavior->SetTarget(FSteeringParams{ pAgentToEvade->GetPosition() });
+	}
 	for (ASteeringAgent* Agent : Agents)
 	{
 		RegisterNeighbors(Agent);
@@ -141,6 +160,9 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 void Flock::RenderNeighborhood()
 {
  // TODO: Debugrender the neighbors for the first agent in the flock
+	if (!DebugRenderNeighborhood)
+		return;
+	//DrawDebugCircle(pWorld, , NeighborhoodRadius, 8, FColor::Green);
 }
 
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
