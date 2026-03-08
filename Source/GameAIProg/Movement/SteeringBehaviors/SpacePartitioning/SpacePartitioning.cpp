@@ -145,8 +145,8 @@ int CellSpace::PositionToIndex(FVector2D const & Pos) const
 {
 	// TODO Calculate the index of the cell based on the position
 	FVector2D AgentPos{ Pos - CellOrigin };
-	int col = AgentPos.X / CellWidth;
-	int row = AgentPos.Y / CellHeight;
+	int col = std::clamp(static_cast<int>(AgentPos.X / CellWidth), 0, NrOfCols - 1);
+	int row = std::clamp(static_cast<int>(AgentPos.Y / CellHeight), 0, NrOfRows - 1);
 	int index = row * NrOfCols + col;
 	return index;
 }

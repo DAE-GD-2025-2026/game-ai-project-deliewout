@@ -1,3 +1,3 @@
 # Game AI Project
 
-Feel free to edit the readme to your liking
+The current implemetation of making an ai that has flocking combined with spatial partitioning
