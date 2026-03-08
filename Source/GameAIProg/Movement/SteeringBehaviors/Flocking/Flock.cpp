@@ -54,9 +54,12 @@ Flock::Flock(
 	Neighbors.SetNum(FlockSize);
 #endif
 	//initialize the flock and the memory pool
+	FActorSpawnParameters params{};
+	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	params.bNoFail = true;
 	for (int i = 0; i < FlockSize; ++i)
 	{
-		if (ASteeringAgent* agent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, FVector{ FMath::FRandRange(-WorldSize / 2, WorldSize / 2),FMath::FRandRange(-WorldSize / 2, WorldSize / 2),90.0f }, FRotator::ZeroRotator))
+		if (ASteeringAgent* agent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, FVector{ FMath::FRandRange(-WorldSize / 2, WorldSize / 2),FMath::FRandRange(-WorldSize / 2, WorldSize / 2),90.0f }, FRotator::ZeroRotator,params))
 		{
 			agent->SetActorTickEnabled(false);
 			agent->SetSteeringBehavior(pCurrentSteeringBehaviour);
@@ -188,7 +191,8 @@ void Flock::RenderNeighborhood()
  // TODO: Debugrender the neighbors for the first agent in the flock
 	if (!DebugRenderNeighborhood)
 		return;
-	//DrawDebugCircle(pWorld, , NeighborhoodRadius, 8, FColor::Green);
+	//DrawDebugCircle(pWorld,Agents[0]->GetPosition(), NeighborhoodRadius, 8, FColor::Green, false, -1.f, 0U, 0.0f, FVector(1.0f, 0.0f, 0.0f), FVector(0.0f, 1.0f, 0.0f));
+
 }
 
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
