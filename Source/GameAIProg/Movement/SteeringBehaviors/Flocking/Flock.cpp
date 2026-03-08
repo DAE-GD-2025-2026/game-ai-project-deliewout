@@ -15,22 +15,33 @@ Flock::Flock(
 	, pAgentToEvade{pAgentToEvade}
 {
 	Agents.SetNum(FlockSize);
-	Neighbors.SetNum(FlockSize);
-	//initialize the flock and the memory pool
 	
-	for (int i{ 0 }; i < FlockSize; ++i)
+	//initialize the flock and the memory pool
+	for (int i = 0; i < FlockSize; ++i)
 	{
 		ASteeringAgent* agent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, FVector{ FMath::FRandRange(-WorldSize, WorldSize),FMath::FRandRange(-WorldSize, WorldSize),90.0f }, FRotator::ZeroRotator);
-		Agents[i]= agent;
-		//if (Agents[i] == nullptr)
-		//	--i;
+		Agents[i] = agent;
+		if (Agents[i] == nullptr)
+			--i;
 	}
 
 	pSeparationBehavior = std::make_unique<Separation>(this);
 	pCohesionBehavior = std::make_unique<Cohesion>(this);
 	pVelMatchBehavior = std::make_unique<VelocityMatch>(this);
-	//pSeekBehavior = std::make_unique<Seek>(this);
-	//pWanderBehavior = std::make_unique<Wander>(this);
+	pSeekBehavior = std::make_unique<Seek>();
+	pWanderBehavior = std::make_unique<Wander>();
+
+	pBlendedSteering = std::make_unique<BlendedSteering>(
+		std::vector<BlendedSteering::WeightedBehavior>{
+			{pSeparationBehavior.get(), 0.33f},
+			{ pCohesionBehavior.get(), 0.33f },
+			{ pVelMatchBehavior.get(), 0.33f },
+			{ pSeekBehavior.get(),0.8f },
+			{ pWanderBehavior.get(),0.2f }
+
+	}
+		);
+	Neighbors.SetNum(FlockSize-1);
 }
 
 Flock::~Flock()
@@ -51,14 +62,15 @@ void Flock::Tick(float DeltaTime)
 	{
 		RegisterNeighbors(Agent);
 		Agent->Tick(DeltaTime);
-		FVector2D pos = Agent->GetPosition();
-
+		//FVector2D pos = Agent->GetPosition();
+		
 	}
 }
 
 void Flock::RenderDebug()
 {
  // TODO: Render all the agents in the flock
+	RenderNeighborhood();
 }
 
 void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
@@ -106,7 +118,11 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 
   // TODO: implement ImGUI sliders for steering behavior weights here
 		//float 
-		//ImGui::SliderFloat("Cohesion",)
+		ImGui::SliderFloat("Separation", &pBlendedSteering->GetWeightedBehaviorsRef()[0].Weight, 0.0f, 1.0f, "%.33f");
+		ImGui::SliderFloat("Cohesion", &pBlendedSteering->GetWeightedBehaviorsRef()[1].Weight, 0.0f, 1.0f, "%.33f");
+		ImGui::SliderFloat("VelocityMatch", &pBlendedSteering->GetWeightedBehaviorsRef()[2].Weight, 0.0f, 1.0f, "%.33f");
+		ImGui::SliderFloat("Seek", &pBlendedSteering->GetWeightedBehaviorsRef()[3].Weight, 0.0f, 1.0f, "%.8f");
+		ImGui::SliderFloat("Wander", &pBlendedSteering->GetWeightedBehaviorsRef()[4].Weight, 0.0f, 1.0f, "%.2f");
 		//End
 		ImGui::End();
 	}
@@ -166,6 +182,6 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
- // TODO: Implement
+	pSeekBehavior->SetTarget(Target);
 }
 

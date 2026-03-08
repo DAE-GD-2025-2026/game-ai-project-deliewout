@@ -32,5 +32,5 @@ private:
 	bool UseMouseTarget = false;
 	bool CanDebugRender = false;
 
-	
+
 };
