@@ -47,14 +47,19 @@ Flock::Flock(
 		);
 		pCurrentSteeringBehaviour = pPrioritySteering.get();
 	}
-
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	OldPositions.SetNum(FlockSize);
+	pPartitionedSpace = std::make_unique<CellSpace>(pWorld, WorldSize*2.f, WorldSize*2.f, NrOfCellsX, NrOfCellsX, FlockSize);
+#else
+	Neighbors.SetNum(FlockSize);
+#endif
 	//initialize the flock and the memory pool
 	for (int i = 0; i < FlockSize; ++i)
 	{
 		if (ASteeringAgent* agent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, FVector{ FMath::FRandRange(-WorldSize / 2, WorldSize / 2),FMath::FRandRange(-WorldSize / 2, WorldSize / 2),90.0f }, FRotator::ZeroRotator))
 		{
 			agent->SetActorTickEnabled(false);
-			agent->SetSteeringBehavior(pBlendedSteering.get());
+			agent->SetSteeringBehavior(pCurrentSteeringBehaviour);
 			agent->SetDebugRenderingEnabled(false);
 			Agents[i] = agent;
 		}
@@ -64,13 +69,14 @@ Flock::Flock(
 		}
 	}
 
-	Neighbors.SetNum(FlockSize-1);
 }
 
 Flock::~Flock()
 {
  // TODO: Cleanup any additional data
+#ifndef GAMEAI_USE_SPACE_PARTITIONING
 	Neighbors.Empty();
+#endif
 	Agents.Empty();
 }
 
@@ -85,11 +91,17 @@ void Flock::Tick(float DeltaTime)
 	{
 		pEvadeBehavior->SetTarget(FSteeringParams{ pAgentToEvade->GetPosition() });
 	}
-	for (ASteeringAgent* Agent : Agents)
+	for (int i = 0; i < Agents.Num(); ++i)
 	{
+		ASteeringAgent* Agent = Agents[i];
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+		pPartitionedSpace->RegisterNeighbors(*Agent, NeighborhoodRadius);
+		pPartitionedSpace->UpdateAgentCell(*Agent, OldPositions[i]);
+		OldPositions[i] = Agent->GetPosition();
+#else
 		RegisterNeighbors(Agent);
+#endif 
 		Agent->Tick(DeltaTime);
-		//FVector2D pos = Agent->GetPosition();
 		
 	}
 }
@@ -97,6 +109,11 @@ void Flock::Tick(float DeltaTime)
 void Flock::RenderDebug()
 {
  // TODO: Render all the agents in the flock
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	if (DebugRenderPartitions)
+		pPartitionedSpace->RenderCells();
+#endif
+	if(DebugRenderNeighborhood)
 	RenderNeighborhood();
 }
 
@@ -139,7 +156,16 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 		ImGui::Spacing();
 
   // TODO: implement ImGUI checkboxes for debug rendering here
-
+		if (ImGui::Checkbox("first agent debug", &DebugRenderSteering))
+		{
+			Agents[0]->SetDebugRenderingEnabled(DebugRenderSteering);
+		}
+		ImGui::Checkbox("render neighborhood", &DebugRenderNeighborhood);
+		bool bDebugRenderPartitions = DebugRenderPartitions;
+		if (ImGui::Checkbox("Debug render partitions", &bDebugRenderPartitions))
+		{
+			DebugRenderPartitions = bDebugRenderPartitions;
+		}
 		ImGui::Text("Behavior Weights");
 		ImGui::Spacing();
 
@@ -221,5 +247,21 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
 	pSeekBehavior->SetTarget(Target);
+}
+int Flock::GetNrOfNeighbors() const
+{
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	return pPartitionedSpace->GetNrOfNeighbors();
+#else
+	return NrOfNeighbors;
+#endif
+}
+const TArray<ASteeringAgent*>& Flock::GetNeighbors() const
+{
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	return pPartitionedSpace->GetNeighbors();
+#else
+	return Neighbors;
+#endif
 }
 
