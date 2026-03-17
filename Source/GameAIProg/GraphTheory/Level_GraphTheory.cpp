@@ -105,16 +105,32 @@ void ALevel_GraphTheory::Tick(float DeltaTime)
 	
 	Renderer.RenderGraph(Graph);
 	
-	// TODO Check if the graph has updated
-	// TODO if so, run the EulerianPath algorithm
-	// TODO if a path is found, have the agent follow it
+	//Check if the graph has updated
+	if (PlayerGraphEditor->HasGraphUpdated())
+	{
+
+		EulerianPath eulerianPath(&Graph);
+		Eulerianity eulerianity;
+		std::vector<Node*> trail = eulerianPath.FindPath(eulerianity);
+
+		if (!trail.empty())
+		{
+			UpdateAgentPath(trail);
+		}
+
+	}
+	//if so, run the EulerianPath algorithm
+	//if a path is found, have the agent follow it
 }
 
 void ALevel_GraphTheory::UpdateAgentPath(std::vector<Node*> const& Trail)
 {
 	std::vector<FVector2D> path{};
-	
-	// TODO convert Node vector to positions vector
+	// convert Node vector to positions vector
+	for (int index{ 0 }; index < Trail.size(); index++)
+	{
+		path.push_back(Trail[index]->GetPosition());
+	}
 
 	PathFollow.SetPath(path);
 	if (path.size() > 0)
