@@ -1,11 +1,11 @@
 ﻿#pragma once
 #include <vector>
+#include <map>
 
 namespace GameAI
 {
 	class Graph;
 	class Node;
-
 	class BFS
 	{
 	public:
