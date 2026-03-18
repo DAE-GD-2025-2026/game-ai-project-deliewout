@@ -15,5 +15,6 @@ namespace GameAI
 
 	private:
 		Graph* pGraph;
+		std::vector<Node*> ReconstructPath(std::map<Node*, Node*> parent, Node* pStartNode, Node* pEndNode) const;
 	};
 }
