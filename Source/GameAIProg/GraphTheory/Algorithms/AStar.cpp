@@ -11,6 +11,57 @@ AStar::AStar(Graph* const pGraph, HeuristicFunctions::Heuristic hFunction)
 std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 {
 	std::vector<Node*> path{};
+	std::vector<NodeRecord> openList{};
+	std::vector<NodeRecord> closedList{};
+	NodeRecord currentNodeRecord{};
+	const NodeRecord startRecord{ pStartNode };
+	openList.push_back(startRecord);
+
+	while (!openList.empty())
+	{
+		currentNodeRecord = *std::min_element(openList.begin(), openList.end());
+		if (pGoalNode == currentNodeRecord.pNode)
+			break;
+		const std::vector<Connection*> connections = pGraph->FindConnectionsFrom(currentNodeRecord.pNode->GetId());
+		for ( Connection* currentConnection : connections)
+		{
+			const float currentGCost = currentNodeRecord.costSoFar + currentConnection->GetWeight();
+			//TODO check if it should be connection->GetCost()
+			//NOTE the getweight should be the same as the GetWeight
+			Node* pNextNode = pGraph->GetNode(currentConnection->GetToId()).get();
+
+			auto nodeInClosedList = std::find_if(closedList.begin(), closedList.end(),
+				[pNextNode](const NodeRecord& r) {return r.pNode == pNextNode; });
+
+			if (nodeInClosedList != closedList.end())
+			{
+				if (nodeInClosedList->costSoFar <= currentGCost)
+					continue;
+				closedList.erase(nodeInClosedList);
+			}
+
+			auto nodeInOpenList = std::find_if(openList.begin(), openList.end(),
+				[pNextNode](const NodeRecord& r) {return r.pNode == pNextNode; });
+
+			if (nodeInOpenList != openList.end())
+			{
+				if (nodeInOpenList->costSoFar <= currentGCost)
+					continue;
+				openList.erase(nodeInOpenList);
+			}
+			openList.push_back(NodeRecord{ pNextNode,currentConnection,currentGCost,currentGCost + GetHeuristicCost(pNextNode,pGoalNode) });
+
+		}
+		//go to trough an iterator or else it wouldnt find the noderecord
+		auto currentIt = std::find(openList.begin(), openList.end(), currentNodeRecord);
+		if (currentIt != openList.end())
+		{
+			openList.erase(currentIt);
+		}
+		closedList.push_back(currentNodeRecord);
+	}
+
+
 	return path;
 }
 
