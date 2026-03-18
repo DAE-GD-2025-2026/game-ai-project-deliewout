@@ -61,7 +61,18 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 		closedList.push_back(currentNodeRecord);
 	}
 
-
+	while (currentNodeRecord.pNode != pStartNode)
+	{
+		path.push_back(currentNodeRecord.pNode);
+		Node* pFromNode = pGraph->GetNode(currentNodeRecord.pConnection->GetFromId()).get();
+		auto recordInClosedList = std::find_if(closedList.begin(), closedList.end(),
+			[pFromNode](const NodeRecord& r) {return r.pNode == pFromNode; });
+		if (recordInClosedList == closedList.end())
+			break;
+		currentNodeRecord = *recordInClosedList;
+	}
+	path.push_back(pStartNode);
+	std::reverse(path.begin(), path.end());
 	return path;
 }
 
