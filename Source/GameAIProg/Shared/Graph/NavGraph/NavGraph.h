@@ -19,5 +19,6 @@ namespace GameAI
 		std::unique_ptr<TriPolygon> pNavPoly;
 
 		void CreateNavigationGraph();
+		const std::vector<const TriPolygon::Triangle*> GetTrianglesFromLineIndex(const int lineIndex)const;
 	};
 }
