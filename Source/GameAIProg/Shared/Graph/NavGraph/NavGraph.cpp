@@ -55,9 +55,10 @@ void GameAI::NavGraph::CreateNavigationGraph()
 		const auto triangles = GetTrianglesFromLineIndex(lineIdx);
 		if (triangles.size() > 1)
 		{
-			const auto& line = pNavPoly->GetEdges()[lineIdx];
+			const auto&
+				line = pNavPoly->GetEdges()[lineIdx];
 			const FVector2D& lineMiddle = FVector2D{ (line.GetP1(*pNavPoly.get()) + line.GetP2(*pNavPoly.get() ))} / 2;
-			AddNode(std::make_unique<Node>(lineMiddle, lineIdx));
+			AddNode(std::make_unique<NavGraphNode>(lineMiddle, lineIdx));
 		}
 	}
 	//2. Create connections now that every node is created	
@@ -68,8 +69,8 @@ void GameAI::NavGraph::CreateNavigationGraph()
 		std::vector<int> validNodeIds{};
 		for (const auto& edge : triangle.GetEdges())
 		{
-			const auto& edgeIdx = pNavPoly->FindEdgeIndex(edge);
-			const auto& nodeId = GetNodeIdFromEdgeIndex(edgeIdx.value());
+			auto edgeIdx = pNavPoly->FindEdgeIndex(edge);
+			auto nodeId = GetNodeIdFromEdgeIndex(edgeIdx.value());
 			if (GetNodeIdFromEdgeIndex(edgeIdx.value()) != Graphs::InvalidNodeId)
 			{
 				validNodeIds.push_back(nodeId);
@@ -77,13 +78,13 @@ void GameAI::NavGraph::CreateNavigationGraph()
 		}
 		if (validNodeIds.size() == 2)
 		{
-			AddConnection(validNodeIds[0], validNodeIds[1]);
+			AddConnection(std::make_unique<Connection>(validNodeIds[0], validNodeIds[1]));
 		}
 		else if (validNodeIds.size() == 3)
 		{
-			AddConnection(validNodeIds[0], validNodeIds[1]);
-			AddConnection(validNodeIds[1], validNodeIds[2]);
-			AddConnection(validNodeIds[2], validNodeIds[0]);
+			AddConnection(std::make_unique<Connection>(validNodeIds[0], validNodeIds[1]));
+			AddConnection(std::make_unique<Connection>(validNodeIds[1], validNodeIds[2]));
+			AddConnection(std::make_unique<Connection>(validNodeIds[2], validNodeIds[0]));
 		}
 	}
 
