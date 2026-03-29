@@ -29,8 +29,8 @@ std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, c
 
 	//Create Extra node for the Start Node (Agent's position
 	auto startNode= std::make_unique<NavGraphNode>(startPos,-1);
-	const int startNodeId = startNode->GetId();
-	pNavGraphCopy->AddNode(std::move(startNode));
+	const int startNodeId = pNavGraphCopy->AddNode(std::move(startNode));
+	
 	for (const auto& edge : startTriangle->GetEdges())
 	{
 		auto edgeIdx = pNavGraph->GetNavPolygon()->FindEdgeIndex(edge);
@@ -48,9 +48,9 @@ std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, c
 		}
 	}
 	//Create extra node for the endNode
-	auto endNode = std::make_unique<NavGraphNode>( startPos,pNavGraphCopy->GetNodes().size());
-	const int endNodeId = endNode->GetId();
-	pNavGraphCopy->AddNode(std::move(endNode));
+	auto endNode = std::make_unique<NavGraphNode>( endPos,pNavGraphCopy->GetNodes().size());
+	const int endNodeId = pNavGraphCopy->AddNode(std::move(endNode));
+	
 	for (const auto& edge : endTriangle->GetEdges())
 	{
 		auto edgeIdx = pNavGraph->GetNavPolygon()->FindEdgeIndex(edge);
@@ -70,7 +70,7 @@ std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, c
 	//Run A star on new graph
 	AStar aStar{ pNavGraphCopy.get(),HeuristicFunctions::Euclidean };
 	auto path = aStar.FindPath(pNavGraphCopy->GetNode(startNodeId).get(), pNavGraphCopy->GetNode(endNodeId).get());
-	finalPath.reserve(path.size());
+	//finalPath.reserve(path.size());
 	for (auto& currentNode : path)
 	{
 		finalPath.emplace_back(currentNode->GetPosition());
@@ -78,8 +78,8 @@ std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, c
 	//Debug Visualisation
 
 	// Extra: Run optimiser on new graph (First check if everything works without SSFA!)
-	// debugPortals = SSFA::FindPortals(nodes, *pNavGraph->GetNavPolygon());
-	// finalPath = SSFA::OptimizePortals(debugPortals, *pNavGraph->GetNavPolygon());
+	 //debugPortals = SSFA::FindPortals(path, *pNavGraph->GetNavPolygon());
+	 //finalPath = SSFA::OptimizePortals(debugPortals, *pNavGraph->GetNavPolygon());
 	
 	return finalPath;
 }
