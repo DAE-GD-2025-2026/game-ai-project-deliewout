@@ -24,19 +24,23 @@ public:
 		//For each node received, get it's corresponding line
 		for (size_t idx = 1; idx < Path.size()-1; ++idx)
 		{
-			auto pNode = Path[idx];
-			auto pLine = NavPoly.GetEdges()[pNode->GetId()];
+			NavGraphNode* pNavNode = static_cast<NavGraphNode*>(Path[idx]);
+			int edgeIdx = pNavNode->GetEdgeIdx();
+			
+			const auto& edge = NavPoly.GetEdges()[edgeIdx];
+
+			FVector2D P1 = FVector2D{ edge.GetP1(NavPoly) };
+			FVector2D P2 = FVector2D{ edge.GetP2(NavPoly) };
 
 			//Redetermine it's "orientation" based on the required path (left-right vs right-left) - p1 should be right point
-			FVector2D centerLine = FVector2D(pLine.GetP1(NavPoly) + pLine.GetP2(NavPoly)) / 2.f;
 			FVector2D previousPos =  Path[idx - 1]->GetPosition();
-			auto cp = FVector2D::CrossProduct((centerLine - previousPos), (FVector2D{ pLine.GetP1(NavPoly) } - previousPos));
+			auto cp = FVector2D::CrossProduct((Path[idx]->GetPosition() - previousPos), P1 - Path[idx]->GetPosition());
 
 			NavLine portalLine{};
 			if (cp > 0)//left;
-				portalLine = NavLine(FVector2D{ pLine.GetP2(NavPoly) }, FVector2D{ pLine.GetP1(NavPoly) });
+				portalLine = NavLine( P2,P1 );
 			else //right
-				portalLine = NavLine(FVector2D{ pLine.GetP1(NavPoly) }, FVector2D{ pLine.GetP2(NavPoly) });
+				portalLine = NavLine(P1,P2);
 
 			//Store portal
 			Portals.push_back(NavLine(portalLine));
