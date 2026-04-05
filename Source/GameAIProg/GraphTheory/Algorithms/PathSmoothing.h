@@ -64,7 +64,7 @@ public:
 
 		Path.push_back(apexPos);
 		//P1 == right point of portal, P2 == left point of portal
-		for ( int portalIdx = 1; portalIdx < Portals.size(); ++portalIdx)
+		for ( size_t portalIdx = 1; portalIdx < Portals.size(); ++portalIdx)
 		{
 			auto currentPortal = Portals[portalIdx];
 			//--- RIGHT CHECK ---
@@ -87,12 +87,12 @@ public:
 					apexIdx = leftLegIdx;
 					portalIdx = apexIdx;
 
-					leftLegIdx = portalIdx;
-					rightLegIdx = portalIdx;
+					leftLegIdx = apexIdx+1;
+					rightLegIdx = apexIdx +1;
 
 					Path.push_back(apexPos);
 
-					if (portalIdx < Portals.size())
+					if (apexIdx+1 < Portals.size())
 					{
 						rightLeg = Portals[rightLegIdx].P1 - apexPos;
 						leftLeg = Portals[leftLegIdx].P2 - apexPos;
@@ -124,12 +124,12 @@ public:
 					apexIdx = rightLegIdx;
 					portalIdx = apexIdx;
 
-					leftLegIdx = portalIdx;
-					rightLegIdx = portalIdx;
+					leftLegIdx = apexIdx+1;
+					rightLegIdx = apexIdx+1;
 
 					Path.push_back(apexPos);
 
-					if (portalIdx < Portals.size())
+					if (apexIdx < Portals.size())
 					{
 						rightLeg = Portals[rightLegIdx].P1 - apexPos;
 						leftLeg = Portals[leftLegIdx].P2 - apexPos;
