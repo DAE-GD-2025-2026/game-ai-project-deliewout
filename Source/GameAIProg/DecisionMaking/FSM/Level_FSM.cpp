@@ -5,7 +5,7 @@
 
 #include "FSMComponent.h"
 #include "DecisionMaking/GameAIController.h"
-
+#include "States/State.h"
 
 // Sets default values
 ALevel_FSM::ALevel_FSM()
@@ -22,17 +22,18 @@ void ALevel_FSM::BeginPlay()
 	Agent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, 
 	FVector{0,0,90}, FRotator::ZeroRotator);
 	Agent->SetDebugRenderingEnabled(false);
+
+	TArray<FVector> PatrolPoints = { FVector(0,0,0), FVector(1000,0,0),FVector(1000,1000,0),FVector(0,1000,0) };
 	
-	/* TODO
 	if (AGameAIController* AIController = Cast<AGameAIController>(Agent->GetController()))
 	{
 		if (UFSMComponent* FSM = Cast<UFSMComponent>(AIController->GetBrainComponent()))
 		{
-			FSM->AddState(std::make_unique<GameAI::FSM::TestState>());
+			FSM->AddState(std::make_unique<GameAI::FSM::Patrol>(PatrolPoints));
 			AIController->RunFiniteStateMachine();
 		}
 	}
-	*/
+	
 }
 
 // Called every frame
