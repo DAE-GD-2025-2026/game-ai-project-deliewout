@@ -3,6 +3,7 @@
 
 #include "DecisionMaking/FSM/FSM.h"
 #include "States/Transition.h"
+#include "States/State.h"
 
 using namespace GameAI::FSM;
 
@@ -14,11 +15,16 @@ void FSM::Update(float DeltaTime, UBlackboardComponent* Blackboard)
 	{
 		if (Transition.Condition)
 		{
-
+			ChangeState(Transition.To,Blackboard);
+			break;
 		}
 	}
+	CurrentState->OnUpdate(DeltaTime, Blackboard);
 }
 
-void FSM::ChangeState(State* NewState)
+void FSM::ChangeState(State* NewState, UBlackboardComponent* Blackboard)
 {
+	if (CurrentState) CurrentState->OnExit(Blackboard);
+	CurrentState = NewState;
+	CurrentState->OnEnter(Blackboard);
 }

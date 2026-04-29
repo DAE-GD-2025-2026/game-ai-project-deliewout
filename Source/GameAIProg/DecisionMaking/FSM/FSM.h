@@ -6,20 +6,24 @@
 #include <memory>
 #include <vector>
 #include <map>
+//#include "States/Transition.h"
+#include "States/State.h"
 
 /**
  * 
  */
 namespace GameAI::FSM 
 {
-	class State;
-	struct Transition;
+	
 	class FSM
 	{
 	public:
-
+		void SetInitialState(State* InitialState) { CurrentState = InitialState; }
+		void AddState(std::unique_ptr<State> NewState) { States.push_back(std::move(NewState)); }
+		void AddTransition(State* From, Transition T) { Transitions[From].push_back(T); }
 		void Update(float DeltaTime, UBlackboardComponent* Blackboard);
-		void ChangeState(State* NewState);
+		void ChangeState(State* NewState, UBlackboardComponent* Blackboard);
+		
 
 	private:
 		State* CurrentState = nullptr;
