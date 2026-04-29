@@ -3,7 +3,8 @@
 
 #include "FSMComponent.h"
 
-
+#include "FSM.h"
+#include "States/State.h"
 // Sets default values for this component's properties
 UFSMComponent::UFSMComponent()
 {
@@ -11,20 +12,20 @@ UFSMComponent::UFSMComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// TODO Setup FSM
-	//FSMInstance = std::make_unique<GameAI::FSM::FSM>();
+	FSMInstance = std::make_unique<GameAI::FSM::FSM>();
 }
 
 
 void UFSMComponent::AddState(std::unique_ptr<GameAI::FSM::State>&& NewState)
 {
-	// TODO
-	
+
+	FSMInstance->AddState(std::move(NewState));
 }
 
 void UFSMComponent::AddTransition(GameAI::FSM::State* From, GameAI::FSM::State* To, std::function<bool()> EvalFunc) const
 {
 	// TODO
+	FSMInstance->AddTransition(From, { From,To,EvalFunc });
 }
 
 // Called when the game starts
@@ -39,18 +40,23 @@ void UFSMComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	// TODO
+	if (bIsRunning && FSMInstance)
+	{
+		FSMInstance->Update(DeltaTime, GetBlackboardComponent());
+	}
 }
 
 void UFSMComponent::StartLogic()
 {
 	Super::StartLogic();
 
-	// TODO
+	bIsRunning = true;
 }
 
 void UFSMComponent::StopLogic(const FString& Reason)
 {
 	// TODO
+	bIsRunning = false;
 }
 
 bool UFSMComponent::IsRunning() const

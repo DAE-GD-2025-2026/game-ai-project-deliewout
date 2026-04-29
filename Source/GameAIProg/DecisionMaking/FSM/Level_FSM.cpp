@@ -6,6 +6,7 @@
 #include "FSMComponent.h"
 #include "DecisionMaking/GameAIController.h"
 #include "States/State.h"
+#include <functional>
 
 // Sets default values
 ALevel_FSM::ALevel_FSM()
@@ -30,6 +31,10 @@ void ALevel_FSM::BeginPlay()
 		if (UFSMComponent* FSM = Cast<UFSMComponent>(AIController->GetBrainComponent()))
 		{
 			FSM->AddState(std::make_unique<GameAI::FSM::Patrol>(PatrolPoints));
+			FSM->AddState(std::make_unique<GameAI::FSM::Search>());
+			FSM->AddState(std::make_unique<GameAI::FSM::Chase>());
+
+			//std::function<bool> IsSearchingTooLong= [] ()
 			AIController->RunFiniteStateMachine();
 		}
 	}

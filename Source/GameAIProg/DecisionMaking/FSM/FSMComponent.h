@@ -12,7 +12,7 @@
 namespace GameAI::FSM
 {
 	class State;
-	class Transition;
+	struct Transition;
 	class FSM; // contains FSM logic
 }
 
@@ -42,6 +42,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	//std::unique_ptr<GameAI::FSM::FSM> FSMInstance;
+	std::unique_ptr<GameAI::FSM::FSM> FSMInstance;
 	bool bIsRunning{false};
 };

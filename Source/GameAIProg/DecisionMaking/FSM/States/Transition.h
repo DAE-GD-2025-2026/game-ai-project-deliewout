@@ -7,16 +7,3 @@
 /**
  * 
  */
-namespace GameAI::FSM
-{
-	class State;
-	struct Transition
-	{
-	public:
-		State* From;
-		State* To;
-		std::function<bool()> Condition;
-	};
-
-	
-}
