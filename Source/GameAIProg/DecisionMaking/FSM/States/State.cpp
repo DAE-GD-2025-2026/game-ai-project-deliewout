@@ -44,8 +44,34 @@ void Chase::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 
 void Search::OnEnter(UBlackboardComponent* BB)
 {
+	SearchTimer = 5.0f;
+	WanderCooldown = 2.0f;
+	bReachedLastLocation = false;
 }
 
 void Search::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 {
+	SearchTimer -= DeltaTime;
+
+	AAIController* AIController = Cast<AAIController>(BB->GetOwner());
+	if (!AIController || !AIController->GetPawn())return;
+
+	FVector ActorLocation = AIController->GetPawn()->GetActorLocation();
+	FVector SearchPos = BB->GetValueAsVector(Target);
+
+	if (FVector::Dist(ActorLocation, SearchPos) < 100.f);
+	{
+		bReachedLastLocation = true;
+	}
+	if (bReachedLastLocation && SearchTimer > 0.0f)
+	{
+		WanderCooldown -= DeltaTime;
+		if (WanderCooldown <= 0)
+		{
+			FVector randOffset = FVector(FMath::FRandRange(-500.f, 500.f), FMath::FRandRange(-500.f, 500.f), 0);
+			BB->SetValueAsVector(Target, SearchPos + randOffset);
+			WanderCooldown = 2.0f;
+
+		}
+	}
 }

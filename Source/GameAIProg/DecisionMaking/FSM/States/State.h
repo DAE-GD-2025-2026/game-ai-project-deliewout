@@ -2,6 +2,7 @@
 
 #pragma once
 #include "AIController.h"
+#include <functional>
 /**
  * 
  */
@@ -15,6 +16,14 @@ namespace GameAI::FSM
 		virtual void OnUpdate(float deltaTime, UBlackboardComponent* BB) = 0;
 		virtual void OnExit(UBlackboardComponent* BB) {}
 
+	};
+
+	struct Transition
+	{
+	public:
+		State* From;
+		State* To;
+		std::function<bool()> Condition;
 	};
 
 	class Patrol : public State
@@ -31,7 +40,6 @@ namespace GameAI::FSM
 	class Search : public State
 	{
 	public:
-		Search();
 		virtual void OnEnter(UBlackboardComponent* BB) override;
 		virtual void OnUpdate(float DeltaTime, UBlackboardComponent* BB) override;
 	private:
@@ -43,7 +51,6 @@ namespace GameAI::FSM
 	class Chase : public State
 	{
 	public:
-		Chase();
 		virtual void OnUpdate(float DeltaTime, UBlackboardComponent* BB) override;
 	};
 }
