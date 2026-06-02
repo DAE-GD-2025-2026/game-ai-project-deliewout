@@ -7,6 +7,7 @@
 #include "DecisionMaking/GameAIController.h"
 #include "States/State.h"
 #include <functional>
+#include "BehaviorTree/BlackboardComponent.h"
 
 // Sets default values
 ALevel_FSM::ALevel_FSM()
@@ -30,11 +31,44 @@ void ALevel_FSM::BeginPlay()
 	{
 		if (UFSMComponent* FSM = Cast<UFSMComponent>(AIController->GetBrainComponent()))
 		{
-			FSM->AddState(std::make_unique<GameAI::FSM::Patrol>(PatrolPoints));
-			FSM->AddState(std::make_unique<GameAI::FSM::Search>());
-			FSM->AddState(std::make_unique<GameAI::FSM::Chase>());
+			auto PatrolState = std::make_unique<GameAI::FSM::Patrol>(PatrolPoints);
+			auto SearchState = std::make_unique<GameAI::FSM::Search>();
+			auto ChaseState = std::make_unique<GameAI::FSM::Chase>();
 
-			//std::function<bool> IsSearchingTooLong= [] ()
+			GameAI::FSM::State* PatrolPtr = PatrolState.get();
+			GameAI::FSM::State* SearchPtr = SearchState.get();
+			GameAI::FSM::State* ChasePtr = ChaseState.get();
+
+			FSM->AddState(std::move(PatrolState),true);
+			FSM->AddState(std::move(SearchState));
+			FSM->AddState(std::move(ChaseState));
+
+			UBlackboardComponent* BB = AIController->GetBlackboardComponent();
+
+			auto IsTargetVisible = [AIController, BB]()->bool
+				{
+					AActor* TargetPlayer = Cast<AActor>(BB->GetValueAsObject("TargetPlayer"));
+					if (!TargetPlayer || !AIController->GetPawn()) return false;
+					const float Dist = FVector::Dist(AIController->GetPawn()->GetActorLocation(), TargetPlayer->GetActorLocation());
+					return Dist < 1500.f && AIController->LineOfSightTo(TargetPlayer);
+				};
+			
+
+			auto IsTargetNotVisible = [IsTargetVisible]()->bool
+				{
+					return !IsTargetVisible();
+				};
+
+			auto IsSearchingTooLong = [BB]()->bool
+				{
+					return BB->GetValueAsBool("SearchExpired");
+				};
+
+			FSM->AddTransition(PatrolPtr, ChasePtr, IsTargetVisible);
+			FSM->AddTransition(ChasePtr, SearchPtr, IsTargetNotVisible);
+			FSM->AddTransition(SearchPtr, ChasePtr, IsTargetVisible);
+			FSM->AddTransition(SearchPtr, PatrolPtr, IsSearchingTooLong);
+
 			AIController->RunFiniteStateMachine();
 		}
 	}

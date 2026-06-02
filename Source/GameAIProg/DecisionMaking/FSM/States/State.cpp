@@ -51,11 +51,18 @@ void Search::OnEnter(UBlackboardComponent* BB)
 	SearchTimer = 5.0f;
 	WanderCooldown = 2.0f;
 	bReachedLastLocation = false;
+	BB->SetValueAsBool("SearchExpired", false);
 }
 
 void Search::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 {
 	SearchTimer -= DeltaTime;
+
+	if (SearchTimer <= 0.0f)
+	{
+		BB->SetValueAsBool("SearchExpired", true);
+		return;
+	}
 
 	AAIController* AIController = Cast<AAIController>(BB->GetOwner());
 	if (!AIController || !AIController->GetPawn())return;

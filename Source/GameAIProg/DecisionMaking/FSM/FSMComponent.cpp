@@ -16,10 +16,14 @@ UFSMComponent::UFSMComponent()
 }
 
 
-void UFSMComponent::AddState(std::unique_ptr<GameAI::FSM::State>&& NewState)
+void UFSMComponent::AddState(std::unique_ptr<GameAI::FSM::State>&& NewState, bool bSetAsInitial)
 {
-
+	GameAI::FSM::State* RawState = NewState.get();
 	FSMInstance->AddState(std::move(NewState));
+	if (bSetAsInitial)
+	{
+		FSMInstance->SetInitialState(RawState);
+	}
 }
 
 void UFSMComponent::AddTransition(GameAI::FSM::State* From, GameAI::FSM::State* To, std::function<bool()> EvalFunc) const

@@ -13,7 +13,7 @@ void FSM::Update(float DeltaTime, UBlackboardComponent* Blackboard)
 
 	for (auto& Transition : Transitions[CurrentState])
 	{
-		if (Transition.Condition)
+		if (Transition.Condition && Transition.Condition())
 		{
 			ChangeState(Transition.To,Blackboard);
 			break;
