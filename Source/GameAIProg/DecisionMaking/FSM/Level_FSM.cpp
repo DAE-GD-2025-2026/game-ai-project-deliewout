@@ -24,7 +24,7 @@ void ALevel_FSM::BeginPlay()
 	FVector{0,0,90}, FRotator::ZeroRotator);
 	Agent->SetDebugRenderingEnabled(false);
 
-	TArray<FVector> PatrolPoints = { FVector(0,0,0), FVector(1000,0,0),FVector(1000,1000,0),FVector(0,1000,0) };
+	TArray<FVector> PatrolPoints = { FVector(0,0,90), FVector(1000,0,90),FVector(1000,1000,90),FVector(0,1000,90) };
 	
 	if (AGameAIController* AIController = Cast<AGameAIController>(Agent->GetController()))
 	{

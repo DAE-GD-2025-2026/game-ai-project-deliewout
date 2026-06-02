@@ -27,9 +27,13 @@ void Patrol::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 	if (ControlledPawn)
 	{
 		float Distance = FVector::Dist(ControlledPawn->GetActorLocation(), PatrolPath[CurrentIndex]);
+		if (Distance < 100.f)
+		{
 		CurrentIndex = (CurrentIndex + 1) % PatrolPath.Num();
-
 		BB->SetValueAsVector(Target, PatrolPath[CurrentIndex]);
+
+		}
+
 	}
 }
 
@@ -59,7 +63,7 @@ void Search::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 	FVector ActorLocation = AIController->GetPawn()->GetActorLocation();
 	FVector SearchPos = BB->GetValueAsVector(Target);
 
-	if (FVector::Dist(ActorLocation, SearchPos) < 100.f);
+	if (FVector::Dist(ActorLocation, SearchPos) < 100.f)
 	{
 		bReachedLastLocation = true;
 	}
