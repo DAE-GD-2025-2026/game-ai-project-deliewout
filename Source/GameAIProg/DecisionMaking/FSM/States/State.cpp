@@ -15,6 +15,8 @@ void Patrol::OnEnter(UBlackboardComponent* BB)
 	if (PatrolPath.Num() > 0)
 	{
 		BB->SetValueAsVector(Target, PatrolPath[CurrentIndex]);
+		AAIController* AIController = Cast<AAIController>(BB->GetOwner());
+		if (AIController) AIController->MoveToLocation(PatrolPath[CurrentIndex]);
 	}
 }
 
@@ -29,11 +31,10 @@ void Patrol::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 		float Distance = FVector::Dist(ControlledPawn->GetActorLocation(), PatrolPath[CurrentIndex]);
 		if (Distance < 100.f)
 		{
-		CurrentIndex = (CurrentIndex + 1) % PatrolPath.Num();
-		BB->SetValueAsVector(Target, PatrolPath[CurrentIndex]);
-
+			CurrentIndex = (CurrentIndex + 1) % PatrolPath.Num();
+			BB->SetValueAsVector(Target, PatrolPath[CurrentIndex]);
+			AIController->MoveToLocation(PatrolPath[CurrentIndex]);
 		}
-
 	}
 }
 
@@ -42,7 +43,10 @@ void Chase::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 	AActor* TargetPlayer = Cast<AActor>(BB->GetValueAsObject(Agent));
 	if (TargetPlayer)
 	{
-		BB->SetValueAsVector(Target, TargetPlayer->GetActorLocation());
+		FVector TargetLocation = TargetPlayer->GetActorLocation();
+		BB->SetValueAsVector(Target, TargetLocation);
+		AAIController* AIController = Cast<AAIController>(BB->GetOwner());
+		if (AIController) AIController->MoveToLocation(TargetLocation);
 	}
 }
 
@@ -52,6 +56,9 @@ void Search::OnEnter(UBlackboardComponent* BB)
 	WanderCooldown = 2.0f;
 	bReachedLastLocation = false;
 	BB->SetValueAsBool("SearchExpired", false);
+
+	AAIController* AIController = Cast<AAIController>(BB->GetOwner());
+	if (AIController) AIController->MoveToLocation(BB->GetValueAsVector(Target));
 }
 
 void Search::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
@@ -80,9 +87,10 @@ void Search::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 		if (WanderCooldown <= 0)
 		{
 			FVector randOffset = FVector(FMath::FRandRange(-500.f, 500.f), FMath::FRandRange(-500.f, 500.f), 0);
-			BB->SetValueAsVector(Target, SearchPos + randOffset);
+			FVector WanderTarget = SearchPos + randOffset;
+			BB->SetValueAsVector(Target, WanderTarget);
+			AIController->MoveToLocation(WanderTarget);
 			WanderCooldown = 2.0f;
-
 		}
 	}
 }

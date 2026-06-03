@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Shared/Level_Base.h"
+#include "Movement/SteeringBehaviors/Steering/SteeringBehaviors.h"
 #include "Level_FSM.generated.h"
 
 UCLASS()
@@ -24,5 +25,8 @@ protected:
 
 private:
 	UPROPERTY()
-	ASteeringAgent* Agent{nullptr}; // ref
+	ASteeringAgent* GuardAgent{nullptr}; // ref
+	ASteeringAgent* ThiefAgent{nullptr}; // ref
+
+	Seek* ThiefSeekBehavior{nullptr};
 };

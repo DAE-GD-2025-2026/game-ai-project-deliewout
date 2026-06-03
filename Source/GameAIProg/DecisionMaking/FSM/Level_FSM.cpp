@@ -21,13 +21,20 @@ void ALevel_FSM::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Agent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, 
-	FVector{0,0,90}, FRotator::ZeroRotator);
-	Agent->SetDebugRenderingEnabled(false);
+	GuardAgent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, 
+	FVector{-1000,1000,90}, FRotator::ZeroRotator);
+	GuardAgent->SetDebugRenderingEnabled(false);
 
-	TArray<FVector> PatrolPoints = { FVector(0,0,90), FVector(1000,0,90),FVector(1000,1000,90),FVector(0,1000,90) };
+	ThiefAgent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass,
+		FVector{ 0,0,90 }, FRotator::ZeroRotator);
+	ThiefAgent->SetDebugRenderingEnabled(false);
+
+	ThiefSeekBehavior = new Seek();
+	ThiefAgent->SetSteeringBehavior(ThiefSeekBehavior);
+
+	TArray<FVector> PatrolPoints = { FVector(-1000,-1000,90), FVector(-1000,1000,90),FVector(1000,1000,90),FVector(1000,-1000,90) };
 	
-	if (AGameAIController* AIController = Cast<AGameAIController>(Agent->GetController()))
+	if (AGameAIController* AIController = Cast<AGameAIController>(GuardAgent->GetController()))
 	{
 		if (UFSMComponent* FSM = Cast<UFSMComponent>(AIController->GetBrainComponent()))
 		{
@@ -44,6 +51,7 @@ void ALevel_FSM::BeginPlay()
 			FSM->AddState(std::move(ChaseState));
 
 			UBlackboardComponent* BB = AIController->GetBlackboardComponent();
+			BB->SetValueAsObject("TargetPlayer", ThiefAgent);
 
 			auto IsTargetVisible = [AIController, BB]()->bool
 				{
@@ -79,5 +87,10 @@ void ALevel_FSM::BeginPlay()
 void ALevel_FSM::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (ThiefSeekBehavior)
+	{
+		ThiefSeekBehavior->SetTarget(MouseTarget);
+	}
 }
 
