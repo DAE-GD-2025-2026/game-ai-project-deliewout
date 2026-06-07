@@ -61,14 +61,19 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 		closedList.push_back(currentNodeRecord);
 	}
 
-	//extra assignment: fallback
+	// fallback: if goal is unreachable, path to the closest reachable node instead
 	if (currentNodeRecord.pNode != pGoalNode)
 	{
+		if (closedList.empty())
+			return path;
+		const FVector2D goalPos = pGraph->GetNode(pGoalNode->GetId())->GetPosition();
 		auto closestIt = std::min_element(
 			closedList.begin(), closedList.end(),
 			[&](const NodeRecord& a, const NodeRecord& b)
 			{
-				return GetHeuristicCost(a.pNode, pGoalNode) < GetHeuristicCost(b.pNode, pGoalNode);
+				const float distA = (pGraph->GetNode(a.pNode->GetId())->GetPosition() - goalPos).SizeSquared();
+				const float distB = (pGraph->GetNode(b.pNode->GetId())->GetPosition() - goalPos).SizeSquared();
+				return distA < distB;
 			}
 		);
 		currentNodeRecord = *closestIt;
@@ -77,11 +82,22 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 	{
 		path.push_back(currentNodeRecord.pNode);
 		Node* pFromNode = pGraph->GetNode(currentNodeRecord.pConnection->GetFromId()).get();
-		auto recordInClosedList = std::find_if(closedList.begin(), closedList.end(),
-			[pFromNode](const NodeRecord& r) {return r.pNode == pFromNode; });
-		if (recordInClosedList == closedList.end())
-			break;
-		currentNodeRecord = *recordInClosedList;
+
+		auto closedIt = std::find_if(closedList.begin(), closedList.end(),
+			[pFromNode](const NodeRecord& r) { return r.pNode == pFromNode; });
+		if (closedIt != closedList.end())
+		{
+			currentNodeRecord = *closedIt;
+			continue;
+		}
+		auto openIt = std::find_if(openList.begin(), openList.end(),
+			[pFromNode](const NodeRecord& r) { return r.pNode == pFromNode; });
+		if (openIt != openList.end())
+		{
+			currentNodeRecord = *openIt;
+			continue;
+		}
+		break;
 	}
 	path.push_back(pStartNode);
 	std::reverse(path.begin(), path.end());
