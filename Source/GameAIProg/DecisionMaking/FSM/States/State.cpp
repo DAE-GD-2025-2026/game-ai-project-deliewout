@@ -5,8 +5,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 
-FName Target = "MoveTarget";
-FName Agent = "TargetPlayer";
+FName target = "MoveTarget";
+FName agent = "TargetPlayer";
 
 using namespace GameAI::FSM;
 
@@ -14,7 +14,7 @@ void Patrol::OnEnter(UBlackboardComponent* BB)
 {
 	if (PatrolPath.Num() > 0)
 	{
-		BB->SetValueAsVector(Target, PatrolPath[CurrentIndex]);
+		BB->SetValueAsVector(target, PatrolPath[CurrentIndex]);
 		AAIController* AIController = Cast<AAIController>(BB->GetOwner());
 		if (AIController) AIController->MoveToLocation(PatrolPath[CurrentIndex]);
 	}
@@ -32,7 +32,7 @@ void Patrol::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 		if (Distance < 100.f)
 		{
 			CurrentIndex = (CurrentIndex + 1) % PatrolPath.Num();
-			BB->SetValueAsVector(Target, PatrolPath[CurrentIndex]);
+			BB->SetValueAsVector(target, PatrolPath[CurrentIndex]);
 			AIController->MoveToLocation(PatrolPath[CurrentIndex]);
 		}
 	}
@@ -40,11 +40,11 @@ void Patrol::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 
 void Chase::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 {
-	AActor* TargetPlayer = Cast<AActor>(BB->GetValueAsObject(Agent));
+	AActor* TargetPlayer = Cast<AActor>(BB->GetValueAsObject(agent));
 	if (TargetPlayer)
 	{
 		FVector TargetLocation = TargetPlayer->GetActorLocation();
-		BB->SetValueAsVector(Target, TargetLocation);
+		BB->SetValueAsVector(target, TargetLocation);
 		AAIController* AIController = Cast<AAIController>(BB->GetOwner());
 		if (AIController) AIController->MoveToLocation(TargetLocation);
 	}
@@ -58,7 +58,7 @@ void Search::OnEnter(UBlackboardComponent* BB)
 	BB->SetValueAsBool("SearchExpired", false);
 
 	AAIController* AIController = Cast<AAIController>(BB->GetOwner());
-	if (AIController) AIController->MoveToLocation(BB->GetValueAsVector(Target));
+	if (AIController) AIController->MoveToLocation(BB->GetValueAsVector(target));
 }
 
 void Search::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
@@ -75,7 +75,7 @@ void Search::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 	if (!AIController || !AIController->GetPawn())return;
 
 	FVector ActorLocation = AIController->GetPawn()->GetActorLocation();
-	FVector SearchPos = BB->GetValueAsVector(Target);
+	FVector SearchPos = BB->GetValueAsVector(target);
 
 	if (FVector::Dist(ActorLocation, SearchPos) < 100.f)
 	{
@@ -88,7 +88,7 @@ void Search::OnUpdate(float DeltaTime, UBlackboardComponent* BB)
 		{
 			FVector randOffset = FVector(FMath::FRandRange(-500.f, 500.f), FMath::FRandRange(-500.f, 500.f), 0);
 			FVector WanderTarget = SearchPos + randOffset;
-			BB->SetValueAsVector(Target, WanderTarget);
+			BB->SetValueAsVector(target, WanderTarget);
 			AIController->MoveToLocation(WanderTarget);
 			WanderCooldown = 2.0f;
 		}

@@ -24,16 +24,19 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	SteeringOutput Steering{};
 	const float MaxLineairSpeed{ Agent.GetMaxLinearSpeed() };
-	Steering.LinearVelocity =  Agent.GetPosition()- Target.Position ;
-	//TODO: solve the problem in the distance calculation
-	const float Distance = Steering.LinearVelocity.Length() - TargetRadius;
-	if (Distance < SlowRadius)
+	Steering.LinearVelocity = Target.Position - Agent.GetPosition();
+	const float Distance = Steering.LinearVelocity.Length();
+	if (Distance < TargetRadius)
 	{
-		Steering.LinearVelocity *= Agent.GetMaxLinearSpeed() * (Distance / (SlowRadius + TargetRadius));
+		Steering.LinearVelocity = FVector2D::ZeroVector;
+	}
+	else if (Distance < SlowRadius)
+	{
+		Steering.LinearVelocity = Steering.LinearVelocity.GetSafeNormal() * MaxLineairSpeed * (Distance / SlowRadius);
 	}
 	else
 	{
-		Steering.LinearVelocity *= Agent.GetMaxLinearSpeed();
+		Steering.LinearVelocity = Steering.LinearVelocity.GetSafeNormal() * MaxLineairSpeed;
 	}
 	if (Agent.GetDebugRenderingEnabled())
 	{	
